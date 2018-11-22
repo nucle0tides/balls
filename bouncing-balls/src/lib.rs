@@ -1,10 +1,13 @@
 extern crate js_sys;
 extern crate wasm_bindgen;
 extern crate web_sys;
+extern crate rand;
 
 use std::f64;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
+use rand::thread_rng;
+use rand::seq::SliceRandom;
 
 struct Ball {
     x_speed: i32,
@@ -30,9 +33,28 @@ impl Ball {
     }
 }
 
-fn random_color() -> String {
-    let colors = ["#5B7373", "#393043", "#662D3F", "#8F3C5A", "#B25C66", "#E09E8F"];
-    return String::from("#E09E8F")
+// fn random_color() -> Option<&String> {
+//     let colors: Vec<String> = vec![String::from("#5B7373"), String::from("#393043"), String::from("#662D3F"), String::from("#8F3C5A"), String::from("#B25C66"), String::from("#E09E8F")];
+//     let mut rng = thread_rng();
+//     let color = colors.choose(&mut rng);
+//     return color
+// }
+
+fn setup() {
+    let document = web_sys::window().unwrap().document().unwrap();
+    let canvas = document.get_element_by_id("canvas").unwrap();
+    let canvas: web_sys::HtmlCanvasElement = canvas
+        .dyn_into::<web_sys::HtmlCanvasElement>()
+        .map_err(|_| ())
+        .unwrap();
+
+    let context = canvas
+        .get_context("2d")
+        .unwrap()
+        .unwrap()
+        .dyn_into::<web_sys::CanvasRenderingContext2d>()
+        .unwrap();
+
 }
 
 #[wasm_bindgen]
@@ -51,28 +73,8 @@ pub fn draw() {
         .dyn_into::<web_sys::CanvasRenderingContext2d>()
         .unwrap();
 
-    context.begin_path();
-
-    // Draw the outer circle.
-    context
-        .arc(75.0, 75.0, 50.0, 0.0, f64::consts::PI * 2.0)
-        .unwrap();
-
-    // Draw the mouth.
-    context.move_to(110.0, 75.0);
-    context.arc(75.0, 75.0, 35.0, 0.0, f64::consts::PI).unwrap();
-
-    // Draw the left eye.
-    context.move_to(65.0, 65.0);
-    context
-        .arc(60.0, 65.0, 5.0, 0.0, f64::consts::PI * 2.0)
-        .unwrap();
-
-    // Draw the right eye.
-    context.move_to(95.0, 65.0);
-    context
-        .arc(90.0, 65.0, 5.0, 0.0, f64::consts::PI * 2.0)
-        .unwrap();
-
-    context.stroke();
+    let mut balls: Vec<Ball> = Vec::new(); 
+    for n in 0..50 {
+        balls.push(Ball::new(String::from("#526055")));
+    }
 }
