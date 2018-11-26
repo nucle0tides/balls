@@ -36,12 +36,12 @@ impl Ball {
     }
 }
 
-// fn random_color() -> Option<&String> {
-//     let colors: Vec<String> = vec![String::from("#5B7373"), String::from("#393043"), String::from("#662D3F"), String::from("#8F3C5A"), String::from("#B25C66"), String::from("#E09E8F")];
-//     let mut rng = thread_rng();
-//     let color = colors.choose(&mut rng);
-//     return color
-// }
+fn random_color() -> String {
+    let colors = [String::from("#5B7373"), String::from("#393043"), String::from("#662D3F"), String::from("#8F3C5A"), String::from("#B25C66"), String::from("#E09E8F")];
+    let mut rng = wasm_rng();
+    let color = wasm_rng().choose(&colors).unwrap().to_string();
+    return color;
+}
 
 #[wasm_bindgen]
 pub struct ClosureHandle(Closure<FnMut()>);
