@@ -11,3 +11,4 @@ Cargo.lock
 
 bouncing-balls/www/node_modules
 bouncing-balls/pkg/
+bouncing-balls/bin/
