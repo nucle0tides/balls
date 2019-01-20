@@ -18,43 +18,43 @@ struct Ball {
     radius: f64,
     x: f64,
     y: f64,
-    x_acceleration: f64,
-    y_acceleration: f64,
+    x_displacement: f64,
+    y_displacement: f64,
     color: i32,
 }
 
 impl Ball {
     fn new(color: i32) -> Ball {
         Ball {
-            x_speed: 5.0,
+            x_speed: 4.0,
             y_speed: 2.0,
             radius: 10.0,
             x: 15.0,
             y: 15.0,
-            x_acceleration: 1.0,
-            y_acceleration: 1.0,
+            x_displacement: 0.5,
+            y_displacement: 0.5,
             color,
         }
     }
 
     fn set_ball(&mut self) {
-        self.x = wasm_rng().gen_range(0.0, window_width());
-        self.y = wasm_rng().gen_range(0.0, window_width());
+        self.x = wasm_rng().gen_range(1.0, window_width());
+        self.y = wasm_rng().gen_range(1.0, window_height());
     }
 
     fn move_ball(&mut self) {
-        self.x_acceleration = self.x_acceleration + self.x_speed * (if wasm_rng().gen_range(-window_width(), window_width()) < 0.5 {-0.5} else {0.6});
-        self.y_acceleration = self.y_acceleration + self.y_speed * (if wasm_rng().gen_range(-window_width(), window_width()) < 0.5 {-0.5} else {0.6});
+        self.x_displacement = self.x_speed * (if wasm_rng().gen_range(0.0, window_width()) < 5.0 {-0.5} else {0.5});
+        self.y_displacement = self.y_speed * (if wasm_rng().gen_range(0.0, window_width()) < 5.0 {-0.5} else {0.5});
 
-        self.x = self.x + self.x_acceleration;
-        self.y = self.y + self.y_acceleration;
+        self.x += self.x_displacement;
+        self.y += self.y_displacement;
 
-        if self.x > window_width() - self.radius || self.x < self.radius {
-            self.x_acceleration *= -1.0;
+        if (self.x > window_width() - self.radius) || (self.x < self.radius) {
+            self.x_speed *= -1.0;
         }
 
-        if self.y > window_height() - self.radius || self.y < self.radius {
-            self.y_acceleration *= -1.0;
+        if (self.y > window_height() - self.radius) || (self.y < self.radius) {
+            self.y_speed *= -1.0;
         }
     }
 }
@@ -111,11 +111,9 @@ pub fn draw() {
     }
 
     context.clear_rect(0.0, 0.0, window_width(), window_height());
+    console::log_1(&"setting up balls on canvas".into());
     for b in &mut balls {
         b.set_ball();
-    }
-
-    for b in &mut balls {
         context.set_fill_style(&JsValue::from("#BADA55"));
         context.begin_path();
         context.arc(b.x, b.y, b.radius, 0.0, f64::consts::PI * 2.0).unwrap();
@@ -128,14 +126,13 @@ pub fn draw() {
     *g.borrow_mut() = Some(Closure::wrap(Box::new(move || {
         context.clear_rect(0.0, 0.0, window_width(), window_height());
         for b in &mut balls {
+            // move ball
+            b.move_ball();
+            // draw ball
             context.set_fill_style(&JsValue::from("#BADA55"));
             context.begin_path();
             context.arc(b.x, b.y, b.radius, 0.0, f64::consts::PI * 2.0).unwrap();
             context.fill();
-        }
-        for mut b in &mut balls {
-            b.move_ball();
-            console::log_4(&"Coordinates: ".into(), &b.x.into(), &",".into(), &b.y.into());
         }
         request_animation_frame(f.borrow().as_ref().unwrap());
     }) as Box<FnMut()>));
