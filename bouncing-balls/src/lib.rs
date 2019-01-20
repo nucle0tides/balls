@@ -29,24 +29,25 @@ impl Ball {
             x_speed: 5.0,
             y_speed: 2.0,
             radius: 10.0,
-            x: 1.0,
-            y: 1.0,
+            x: 15.0,
+            y: 15.0,
             x_acceleration: 1.0,
             y_acceleration: 1.0,
             color,
         }
     }
 
-    fn set_ball(mut self) {
-        self.x = 30.0;
-        self.y = 450.0;
+    fn set_ball(&mut self) {
+        self.x = wasm_rng().gen_range(0.0, window_width());
+        self.y = wasm_rng().gen_range(0.0, window_width());
     }
 
-    fn move_ball(mut self) {
-        self.x_acceleration += self.x_speed * wasm_rng().gen_range(0.0, window_width());
-        self.y_acceleration += self.y_speed * wasm_rng().gen_range(0.0, window_height());
-        self.x += self.x_acceleration;
-        self.y += self.y_acceleration;
+    fn move_ball(&mut self) {
+        self.x_acceleration = self.x_acceleration + self.x_speed * wasm_rng().gen_range(0.0, window_width());
+        self.y_acceleration = self.y_acceleration + self.y_speed * wasm_rng().gen_range(0.0, window_height());
+
+        self.x = self.x + self.x_acceleration;
+        self.y = self.y + self.y_acceleration;
 
         if self.x > window_width() - self.radius || self.x < self.radius {
             self.x_acceleration = self.x_acceleration * -1.0;
@@ -125,7 +126,6 @@ pub fn draw() {
     let g = f.clone();
 
     *g.borrow_mut() = Some(Closure::wrap(Box::new(move || {
-        console::log_1(&"RAF Loop".into());
         context.clear_rect(0.0, 0.0, window_width(), window_height());
         for b in &mut balls {
             context.set_fill_style(&JsValue::from("#BADA55"));
@@ -135,6 +135,7 @@ pub fn draw() {
         }
         for mut b in &mut balls {
             b.move_ball();
+            console::log_4(&"Coordinates: ".into(), &b.x.into(), &",".into(), &b.y.into());
         }
         request_animation_frame(f.borrow().as_ref().unwrap());
     }) as Box<FnMut()>));
