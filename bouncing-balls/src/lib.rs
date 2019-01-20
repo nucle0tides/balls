@@ -43,18 +43,18 @@ impl Ball {
     }
 
     fn move_ball(&mut self) {
-        self.x_acceleration = self.x_acceleration + self.x_speed * wasm_rng().gen_range(0.0, window_width());
-        self.y_acceleration = self.y_acceleration + self.y_speed * wasm_rng().gen_range(0.0, window_height());
+        self.x_acceleration = self.x_acceleration + self.x_speed * (if wasm_rng().gen_range(-window_width(), window_width()) < 0.5 {-0.5} else {0.6});
+        self.y_acceleration = self.y_acceleration + self.y_speed * (if wasm_rng().gen_range(-window_width(), window_width()) < 0.5 {-0.5} else {0.6});
 
         self.x = self.x + self.x_acceleration;
         self.y = self.y + self.y_acceleration;
 
         if self.x > window_width() - self.radius || self.x < self.radius {
-            self.x_acceleration = self.x_acceleration * -1.0;
+            self.x_acceleration *= -1.0;
         }
 
         if self.y > window_height() - self.radius || self.y < self.radius {
-            self.y_acceleration = self.y_acceleration * -1.0;
+            self.y_acceleration *= -1.0;
         }
     }
 }
