@@ -8,6 +8,7 @@ use std::f64;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 
+#[derive(Copy, Clone)]
 struct Ball {
     x_speed: f64,
     y_speed: f64,
@@ -17,11 +18,11 @@ struct Ball {
     y: f64,
     x_acceleration: f64,
     y_acceleration: f64,
-    color: String,
+    color: i32,
 }
 
 impl Ball {
-    fn new(color: String) -> Ball {
+    fn new(color: i32) -> Ball {
         Ball {
             x_speed: 5.0,
             y_speed: 2.0,
@@ -36,12 +37,12 @@ impl Ball {
     }
 }
 
-fn random_color() -> String {
-    let colors = [String::from("#5B7373"), String::from("#393043"), String::from("#662D3F"), String::from("#8F3C5A"), String::from("#B25C66"), String::from("#E09E8F")];
-    let mut rng = wasm_rng();
-    let color = wasm_rng().choose(&colors).unwrap().to_string();
-    return color;
-}
+// fn random_color() -> i32 {
+//     let colors = [0x5B7373, 0x393043, 0x662D3F, 0x8F3C5A, 0xB25C66, 0xE09E8F];
+//     let mut rng = wasm_rng();
+//     let color = wasm_rng().choose(&colors).unwrap();
+//     return color;
+// }
 
 #[wasm_bindgen]
 pub struct ClosureHandle(Closure<FnMut()>);
@@ -67,15 +68,15 @@ pub fn draw() {
 
     let mut balls: Vec<Ball> = Vec::new(); 
     for _n in 0..50 {
-        balls.push(Ball::new(String::from("#5a5ca7")));
+        balls.push(Ball::new(0x5B7373));
     }
 
     let rand_num = || wasm_rng().gen_range(0.0, window_height);;
     let draw = || {
-        // context.clear_rect(0.0, 0.0, window_width, window_height);
-        for mut b in balls {
-            b.x = wasm_rng().gen_range(0.0, window_width);
-            b.y = wasm_rng().gen_range(0.0, window_height);
+        context.clear_rect(0.0, 0.0, window_width, window_height);
+        for b in balls {
+            // b.x = wasm_rng().gen_range(0.0, window_width);
+            // b.y = wasm_rng().gen_range(0.0, window_height);
             context.set_fill_style(&JsValue::from(b.color));
             context.begin_path();
             context.arc(b.x, b.y, b.radius, 0.0, f64::consts::PI * 2.0).unwrap();
@@ -85,22 +86,22 @@ pub fn draw() {
 
     draw();
 
-    // let _move_balls = || {
-    //     for mut b in balls {
-    //         b.x_acceleration += b.x_speed * rand::random::<f64>();
-    //         b.y_acceleration += b.y_speed * rand::random::<f64>();
-    //         b.x += b.x_acceleration;
-    //         b.y += b.y_acceleration;
+    let _move_balls = || {
+        for mut b in balls {
+            b.x_acceleration += b.x_speed * wasm_rng().gen_range(0.0, window_width);
+            b.y_acceleration += b.y_speed * wasm_rng().gen_range(0.0, window_height);
+            b.x += b.x_acceleration;
+            b.y += b.y_acceleration;
 
-    //         if b.x > window_width - b.radius || b.x < b.radius {
-    //             b.x_acceleration = b.x_acceleration * -1.0;
-    //         }
+            if b.x > window_width - b.radius || b.x < b.radius {
+                b.x_acceleration = b.x_acceleration * -1.0;
+            }
 
-    //         if b.y > window_height - b.radius || b.y < b.radius {
-    //             b.y_acceleration = b.y_acceleration * -1.0;
-    //         }
-    //     }
-    // };
+            if b.y > window_height - b.radius || b.y < b.radius {
+                b.y_acceleration = b.y_acceleration * -1.0;
+            }
+        }
+    };
 
 
     // let animate = Closure::wrap(Box::new(move || {
