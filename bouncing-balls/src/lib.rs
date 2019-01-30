@@ -20,14 +20,14 @@ struct Ball {
     y: f64,
     x_displacement: f64,
     y_displacement: f64,
-    color: i32,
+    color: &'static str,
 }
 
 impl Ball {
-    fn new(color: i32) -> Ball {
+    fn new(color: &'static str) -> Ball {
         Ball {
-            x_speed: 4.0,
-            y_speed: 2.0,
+            x_speed: wasm_rng().gen_range(2.0, 25.0),
+            y_speed: wasm_rng().gen_range(2.0, 25.0),
             radius: 10.0,
             x: 15.0,
             y: 15.0,
@@ -38,33 +38,33 @@ impl Ball {
     }
 
     fn set_ball(&mut self) {
-        self.x = wasm_rng().gen_range(1.0, window_width());
-        self.y = wasm_rng().gen_range(1.0, window_height());
+        self.x = wasm_rng().gen_range(self.radius, window_width() - self.radius);
+        self.y = wasm_rng().gen_range(self.radius, window_height() - self.radius);
     }
 
     fn move_ball(&mut self) {
-        self.x_displacement = self.x_speed * (if wasm_rng().gen_range(0.0, window_width()) < 5.0 {-0.5} else {0.5});
-        self.y_displacement = self.y_speed * (if wasm_rng().gen_range(0.0, window_width()) < 5.0 {-0.5} else {0.5});
+        self.x_displacement = self.x_speed * (if wasm_rng().gen_range(0.0, window_width()) < 5.0 {-0.25} else {0.25});
+        self.y_displacement = self.y_speed * (if wasm_rng().gen_range(0.0, window_width()) < 5.0 {-0.25} else {0.25});
 
         self.x += self.x_displacement;
         self.y += self.y_displacement;
 
         if (self.x > window_width() - self.radius) || (self.x < self.radius) {
             self.x_speed *= -1.0;
+            self.x_displacement = self.radius;
         }
 
         if (self.y > window_height() - self.radius) || (self.y < self.radius) {
             self.y_speed *= -1.0;
+            self.y_displacement = self.radius;
         }
     }
 }
 
-// fn random_color() -> i32 {
-//     let colors = [0x5B7373, 0x393043, 0x662D3F, 0x8F3C5A, 0xB25C66, 0xE09E8F];
-//     let mut rng = wasm_rng();
-//     let color = wasm_rng().choose(&colors).unwrap();
-//     return color;
-// }
+fn random_color() -> &'static str {
+    let colors = ["#5B7373", "#393043", "#662D3F", "#8F3C5A", "#B25C66", "#E09E8F"];
+    return wasm_rng().choose(&colors).unwrap();
+}
 
 fn window() -> web_sys::Window {
     web_sys::window().expect("no global `window` exists")
@@ -107,14 +107,15 @@ pub fn draw() {
 
     let mut balls: Vec<Ball> = Vec::new(); 
     for _n in 0..50 {
-        balls.push(Ball::new(0x5B7373));
+        balls.push(Ball::new(random_color()));
     }
 
     context.clear_rect(0.0, 0.0, window_width(), window_height());
     console::log_1(&"setting up balls on canvas".into());
     for b in &mut balls {
         b.set_ball();
-        context.set_fill_style(&JsValue::from("#BADA55"));
+        context.set_fill_style(&JsValue::from(b.color));
+        console::log_1(&b.color.into());
         context.begin_path();
         context.arc(b.x, b.y, b.radius, 0.0, f64::consts::PI * 2.0).unwrap();
         context.fill();
@@ -129,7 +130,7 @@ pub fn draw() {
             // move ball
             b.move_ball();
             // draw ball
-            context.set_fill_style(&JsValue::from("#BADA55"));
+            context.set_fill_style(&JsValue::from(b.color));
             context.begin_path();
             context.arc(b.x, b.y, b.radius, 0.0, f64::consts::PI * 2.0).unwrap();
             context.fill();
