@@ -105,17 +105,15 @@ pub fn draw() {
         .dyn_into::<web_sys::CanvasRenderingContext2d>()
         .unwrap();
 
-    let mut balls: Vec<Ball> = Vec::new(); 
-    for _n in 0..50 {
+    let mut balls: Vec<Ball> = Vec::new();
+    for _n in 0..150 {
         balls.push(Ball::new(random_color()));
     }
 
     context.clear_rect(0.0, 0.0, window_width(), window_height());
-    console::log_1(&"setting up balls on canvas".into());
     for b in &mut balls {
         b.set_ball();
         context.set_fill_style(&JsValue::from(b.color));
-        console::log_1(&b.color.into());
         context.begin_path();
         context.arc(b.x, b.y, b.radius, 0.0, f64::consts::PI * 2.0).unwrap();
         context.fill();
